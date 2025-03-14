@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist --repo https://github.com/ManfredAtGit/Wiki-Category-WordCloud.git"
+    "deploy": "gh-pages -d dist"
   },
   "keywords": [
     "wikipedia",
