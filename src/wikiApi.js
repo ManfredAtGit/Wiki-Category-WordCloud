@@ -5,7 +5,23 @@
  * - user choosable language-specific endpoint (en, de, )
  */
 
-const API_ENDPOINT = 'https://en.wikipedia.org/w/api.php';
+const WIKI_ENDPOINTS = {
+    en: 'https://en.wikipedia.org/w/api.php',
+    de: 'https://de.wikipedia.org/w/api.php'
+};
+
+let currentEndpoint = WIKI_ENDPOINTS.en;
+
+/**
+ * Sets the Wikipedia API endpoint language
+ * @param {string} lang - Language code ('en' or 'de')
+ */
+export function setWikiLanguage(lang) {
+    if (!WIKI_ENDPOINTS[lang]) {
+        throw new Error('Unsupported language. Supported languages are: en, de');
+    }
+    currentEndpoint = WIKI_ENDPOINTS[lang];
+}
 
 /**
  * Creates a JSONP request to the Wikipedia API
@@ -26,7 +42,7 @@ function jsonpRequest(params) {
             callback: callbackName
         });
         
-        script.src = `${API_ENDPOINT}?${urlParams}`;
+        script.src = `${currentEndpoint}?${urlParams}`;
         
         // Set up the callback
         window[callbackName] = (data) => {

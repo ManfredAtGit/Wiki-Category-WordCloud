@@ -20,6 +20,9 @@
         }
         .input-group {
             margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
         input[type="text"] {
             padding: 8px;
@@ -27,6 +30,13 @@
             width: 300px;
             border: 1px solid #ddd;
             border-radius: 4px;
+        }
+        select {
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
         }
         button {
             padding: 8px 16px;
@@ -58,6 +68,10 @@
         <h1>Wikipedia Word Frequency Analyzer</h1>
         <div class="input-group">
             <input type="text" id="categoryInput" placeholder="Enter Wikipedia category name">
+            <select id="languageSelect">
+                <option value="en">English</option>
+                <option value="de">German</option>
+            </select>
             <button id="analyzeBtn">Analyze</button>
         </div>
         <div id="progress">

@@ -1,15 +1,15 @@
 /**
  * Main application entry point
  */
-import { getCategoryMembers, getPageContent } from './wikiApi.js';
-import { analyzeText, mergeFrequencies } from './textAnalysis.js';
+import { getCategoryMembers, getPageContent, setWikiLanguage } from './wikiApi.js';
+import { analyzeText, mergeFrequencies, setAnalysisLanguage } from './textAnalysis.js';
 import { createWordCloud } from './visualization.js';
 
 // Cache implementation using localStorage
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
-function loadCache(category) {
-    const cacheKey = `wiki-freq-${category}`;
+function loadCache(category, lang) {
+    const cacheKey = `wiki-freq-${lang}-${category}`;
     const cached = localStorage.getItem(cacheKey);
     
     if (!cached) return null;
@@ -31,9 +31,9 @@ function loadCache(category) {
     }
 }
 
-function saveCache(category, frequencies) {
+function saveCache(category, frequencies, lang) {
     try {
-        const cacheKey = `wiki-freq-${category}`;
+        const cacheKey = `wiki-freq-${lang}-${category}`;
         const cacheData = {
             timestamp: Date.now(),
             frequencies: Array.from(frequencies.entries())
@@ -47,9 +47,21 @@ function saveCache(category, frequencies) {
 
 // UI Elements
 const categoryInput = document.getElementById('categoryInput');
+const languageSelect = document.getElementById('languageSelect');
 const analyzeBtn = document.getElementById('analyzeBtn');
 const progress = document.getElementById('progress');
 const progressText = document.getElementById('progressText');
+
+// Initialize language selection
+setWikiLanguage(languageSelect.value);
+setAnalysisLanguage(languageSelect.value);
+
+// Update both Wiki API and text analysis language when selection changes
+languageSelect.addEventListener('change', () => {
+    const selectedLang = languageSelect.value;
+    setWikiLanguage(selectedLang);
+    setAnalysisLanguage(selectedLang);
+});
 
 // Process pages in batches to avoid overwhelming the browser
 async function processPagesInBatches(pages, batchSize = 5) {
@@ -98,10 +110,11 @@ async function processPagesInBatches(pages, batchSize = 5) {
 }
 
 async function analyzeCategoryPages(category) {
-    console.log('Starting analysis for category:', category);
+    const currentLang = languageSelect.value;
+    console.log('Starting analysis for category:', category, 'in language:', currentLang);
     
     // Check cache first
-    const cached = loadCache(category);
+    const cached = loadCache(category, currentLang);
     if (cached) {
         console.log('Using cached results');
         progressText.textContent = 'Using cached results...';
@@ -124,8 +137,8 @@ async function analyzeCategoryPages(category) {
         const frequencies = await processPagesInBatches(pages);
         console.log('Analysis complete, total unique words:', frequencies.size);
         
-        // Cache results
-        saveCache(category, frequencies);
+        // Cache results with language
+        saveCache(category, frequencies, currentLang);
         
         return frequencies;
     } catch (error) {

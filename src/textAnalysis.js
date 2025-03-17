@@ -1,23 +1,54 @@
 /**
  * Text analysis functionality
- * TODOs:
- * - multilangual stopwordlist
- * - re-work valid-words
- * - implement stemming (models == model )
  */
 
-// Create a custom stopwords set
-const stopwords = new Set([
-    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
-    'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
-    'to', 'was', 'were', 'will', 'with', 'the', 'this', 'but', 'they',
-    'have', 'had', 'what', 'when', 'where', 'who', 'which', 'why', 'how',
-    // Add more domain-specific stopwords
-    'also', 'can', 'may', 'would', 'could', 'should', 'must', 'one', 'two',
-    'many', 'such', 'either', 'often', 'sometimes', 'usually', 'typically',
-    // Add more domain-specific stopwords
-    'if', 'then', 'than', 'or', 'into', 'each','more','some', 'there', 'their', 'been'
-]);
+// Create language-specific stopwords sets
+const stopwords = {
+    en: new Set([
+        'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from',
+        'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the',
+        'to', 'was', 'were', 'will', 'with', 'the', 'this', 'but', 'they',
+        'have', 'had', 'what', 'when', 'where', 'who', 'which', 'why', 'how',
+        'also', 'can', 'may', 'would', 'could', 'should', 'must', 'one', 'two',
+        'many', 'such', 'either', 'often', 'sometimes', 'usually', 'typically',
+        'if', 'then', 'than', 'or', 'into', 'each', 'more', 'some', 'there', 'their', 'been'
+    ]),
+    de: new Set([
+        // Articles
+        'der', 'die', 'das', 'den', 'dem', 'des',
+        'ein', 'eine', 'einer', 'eines', 'einem', 'einen',
+        // Pronouns
+        'ich', 'du', 'er', 'sie', 'es', 'wir', 'ihr', 'sie',
+        'mich', 'mir', 'dich', 'dir', 'ihm', 'ihn', 'uns', 'euch',
+        // Prepositions
+        'in', 'an', 'auf', 'für', 'von', 'mit', 'bei', 'seit', 'aus',
+        'nach', 'zu', 'zur', 'zum', 'unter', 'über', 'neben', 'zwischen',
+        // Conjunctions
+        'und', 'oder', 'aber', 'sondern', 'denn', 'weil', 'dass', 'ob',
+        // Common verbs
+        'ist', 'sind', 'war', 'waren', 'wird', 'werden', 'wurde', 'wurden',
+        'hat', 'haben', 'hatte', 'hatten', 'kann', 'können', 'konnte', 'konnten',
+        // Common adverbs
+        'hier', 'dort', 'dann', 'wann', 'wie', 'wo', 'warum', 'weshalb',
+        'sehr', 'mehr', 'weniger', 'wieder', 'immer', 'nie', 'manchmal',
+        // Other common words
+        'als', 'auch', 'noch', 'schon', 'nur', 'nicht', 'durch', 'bereits',
+        'dabei', 'damit', 'dazu', 'daran', 'darauf', 'darum', 'davon', 'dafür'
+    ])
+};
+
+let currentLanguage = 'en';
+
+/**
+ * Sets the current language for text analysis
+ * @param {string} lang - Language code ('en' or 'de')
+ */
+export function setAnalysisLanguage(lang) {
+    if (!stopwords[lang]) {
+        throw new Error('Unsupported language. Supported languages are: en, de');
+    }
+    currentLanguage = lang;
+}
 
 /**
  * Simple word tokenizer
@@ -26,7 +57,7 @@ const stopwords = new Set([
  */
 function tokenize(text) {
     return text.toLowerCase()
-        .replace(/[^a-z\s]/g, ' ')
+        .replace(/[^a-zäöüß\s]/g, ' ') // Added German special characters
         .split(/\s+/)
         .filter(token => token.length > 0);
 }
@@ -48,10 +79,11 @@ export function analyzeText(text) {
         
         // Filter tokens and count frequencies
         const frequencies = new Map();
+        const currentStopwords = stopwords[currentLanguage];
         
         tokens.forEach(token => {
             // Skip if token is a stopword or not valid
-            if (stopwords.has(token) || !isValidWord(token)) {
+            if (currentStopwords.has(token) || !isValidWord(token)) {
                 return;
             }
             
@@ -74,8 +106,6 @@ function isValidWord(word) {
     // More comprehensive word validation
     if (word.length < 2) return false;
     if (word.length > 30) return false; // Probably not a real word
-    // if (!/^[a-z]+$/.test(word)) return false;
-    // if (/^[aeiou]+$/.test(word)) return false; // Probably not a real word
     return true;
 }
 
